@@ -30,24 +30,14 @@ export class InvoiceService extends GenericService<InvoiceDto, Invoice> {
 
 
     async findOneById(id: string): Promise<Invoice> {
-        const query: FilterQuery<Invoice> = {
-            isDeleted: false,
-            _id: id
-        };
-
-        return this.invoiceModel.findOne(query)
+        return this.invoiceModel.findOne({ _id: id })
             .populate({
                 path: 'itemDetails',
-                populate: {
-                    path: 'productId', // Make sure productId is populated within itemDetails
-                    select: 'productName price' // Optionally select specific fields from Product (e.g., name and price)
-                }
+                populate: { path: 'productId' }  // Populating the product details
             })
-            .populate('customerId')  // Populate customerId at the top level
-            .exec() as Promise<Invoice>;
+            .populate('customerId')
+            .exec();
     }
-
-
 
 }
 
