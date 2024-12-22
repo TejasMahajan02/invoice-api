@@ -27,6 +27,66 @@ export class InvoiceController {
         private _itemDetailServ: ItemDetailService,
     ) { }
 
+    // @Post()
+    // async create(@Req() req: Request, @Body() createdDto: InvoiceDto) {
+    //     // 1️⃣ Validate Customer
+    //     const customerEntity = await this._customerServ.validateCustomerById(createdDto.customerId);
+    //     if (!customerEntity) {
+    //         throw new BadRequestException(`Invalid customer ID: ${createdDto.customerId}`);
+    //     }
+
+    //     // 2️⃣ Validate Product IDs
+    //     const productIds = createdDto.itemDetails.map(item => item.productId);
+    //     const products = await Promise.all(productIds.map(productId => this._productsServ.findOneById(productId)));
+
+    //     const invalidProductIds = createdDto.itemDetails
+    //         .filter((_, index) => !products[index])
+    //         .map(item => item.productId);
+
+    //     if (invalidProductIds.length > 0) {
+    //         throw new BadRequestException(`Invalid product IDs: ${invalidProductIds.join(', ')}`);
+    //     }
+
+    //     // 3️⃣ Check for Duplicate `ItemDetail` Entries
+    //     const itemDetailIds = await Promise.all(
+    //         createdDto.itemDetails.map(async item => {
+    //             const existingItem = await this._itemDetailServ.findOne({
+    //                 productId: item.productId,
+    //                 quantity: item.quantity,
+    //             });
+
+    //             if (existingItem) {
+    //                 return existingItem._id; // Reuse existing `ItemDetail`
+    //             }
+
+    //             // If not found, create a new `ItemDetail`
+    //             const newItem = await this._itemDetailServ.create(item);
+    //             return newItem._id;
+    //         })
+    //     );
+
+    //     // 4️⃣ Check for Duplicate Invoice
+    //     const existingInvoice = await this._invoiceServ.findOne({
+    //         customerId: createdDto.customerId,
+    //         invoiceDate: createdDto.invoiceDate,
+    //         itemDetails: { $in: itemDetailIds },
+    //     });
+
+    //     if (existingInvoice) {
+    //         throw new BadRequestException('Duplicate invoice for this customer and product(s) on this date');
+    //     }
+
+    //     // 5️⃣ Create the Invoice
+    //     const loggedInUser = req['user'];
+    //     const newInvoice = {
+    //         ...createdDto,
+    //         itemDetails: itemDetailIds, // Use the validated `ItemDetail` IDs
+    //         createdUser: loggedInUser._id,
+    //     };
+
+    //     return await this._invoiceServ.create(newInvoice);
+    // }
+
     @Post()
     async create(@Req() req: Request, @Body() createdDto: InvoiceDto) {
         // 1️⃣ Validate Customer
@@ -47,21 +107,15 @@ export class InvoiceController {
             throw new BadRequestException(`Invalid product IDs: ${invalidProductIds.join(', ')}`);
         }
 
-        // 3️⃣ Check for Duplicate `ItemDetail` Entries
-        const itemDetailIds = await Promise.all(
-            createdDto.itemDetails.map(async item => {
-                const existingItem = await this._itemDetailServ.findOne({
+        // 3️⃣ Check for Duplicate `ItemDetail` Entries (now directly in the invoice)
+        const itemDetails = await Promise.all(
+            createdDto.itemDetails.map(async (item) => {
+                // You no longer need to check for existing `ItemDetail` IDs, because the ItemDetails will be embedded
+                return {
                     productId: item.productId,
                     quantity: item.quantity,
-                });
-
-                if (existingItem) {
-                    return existingItem._id; // Reuse existing `ItemDetail`
-                }
-
-                // If not found, create a new `ItemDetail`
-                const newItem = await this._itemDetailServ.create(item);
-                return newItem._id;
+                    // Add other fields if necessary (e.g., price, description)
+                };
             })
         );
 
@@ -69,7 +123,7 @@ export class InvoiceController {
         const existingInvoice = await this._invoiceServ.findOne({
             customerId: createdDto.customerId,
             invoiceDate: createdDto.invoiceDate,
-            itemDetails: { $in: itemDetailIds },
+            itemDetails: { $elemMatch: { $in: itemDetails } }, // Check for duplicate item details inside the embedded array
         });
 
         if (existingInvoice) {
@@ -80,7 +134,7 @@ export class InvoiceController {
         const loggedInUser = req['user'];
         const newInvoice = {
             ...createdDto,
-            itemDetails: itemDetailIds, // Use the validated `ItemDetail` IDs
+            itemDetails: itemDetails, // Directly embed the `ItemDetail` objects
             createdUser: loggedInUser._id,
         };
 
@@ -89,20 +143,31 @@ export class InvoiceController {
 
 
     @Get(':id')
-    async findOne(@Param('id') id: string) {
-        // Step 1: Fetch the Invoice document
-        const invoiceEntity = await this._invoiceServ.findOne({ _id: id, isDeleted: false }, 'customerId itemDetails');
-        
-        // Step 2: Get all ItemDetails using the IN operator
-        const itemDetailIds = invoiceEntity.itemDetails.map(item => item.toString());
-        const itemDetails = await this._itemDetailServ.findByIds(itemDetailIds);
-        
-        // Add the fetched ItemDetails back into the Invoice entity (optional, depending on your needs)
-        invoiceEntity['ItemDetails'] = itemDetails;
-    
-        return invoiceEntity;
+    async findOne(@Param('id') id: string): Promise<Invoice> {
+        const query: FilterQuery<Invoice> = { _id: id, isDeleted: false };
+
+        // Fetch the Invoice with its embedded ItemDetails in a single query
+        const invoiceEntity = await this._invoiceServ.findOne(query, ['customerId', 'itemDetails', 'itemDetails.productId']);
+
+        return invoiceEntity;  // Return the full Invoice document with ItemDetails embedded
     }
-    
+
+
+    // @Get(':id')
+    // async findOne(@Param('id') id: string) {
+    //     // Step 1: Fetch the Invoice document
+    //     const invoiceEntity = await this._invoiceServ.findOne({ _id: id, isDeleted: false }, 'customerId itemDetails');
+
+    //     // Step 2: Get all ItemDetails using the IN operator
+    //     const itemDetailIds = invoiceEntity.itemDetails.map(item => item.toString());
+    //     const itemDetails = await this._itemDetailServ.findByIds(itemDetailIds);
+
+    //     // Add the fetched ItemDetails back into the Invoice entity (optional, depending on your needs)
+    //     invoiceEntity['ItemDetails'] = itemDetails;
+
+    //     return invoiceEntity;
+    // }
+
 
     @Put(':id')
     async updateOne(@Param('id') id: string, @Body() updateDto: Partial<InvoiceDto>) {
