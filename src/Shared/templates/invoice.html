@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Invoice</title>
+    <style>
+        :root {
+            --body-font: 13px;
+            --base-font: 14px;
+            --header-font: 16px;
+        }
+
+        .body-font {
+            font-size: var(--base-font);
+            line-height: 150%;
+        }
+    </style>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 35px;
+        }
+
+        .header {
+            position: absolute;
+            top: 15px;
+            right: 45px;
+        }
+
+        .image-header {
+            position: absolute;
+            top: 105px;
+            right: 3px;
+            width: 130px;
+            height: 40px;
+        }
+
+        .invoice-heading {
+            color: rgb(70, 70, 70);
+            font-weight: 800;
+            font-size: 42px;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 2px solid black
+        }
+
+        .company-info {
+            width: 50%;
+            font-size: 12px;
+            text-align: left;
+        }
+
+        .address-billing {
+            display: flex;
+        }
+
+        .address,
+        .billing {
+            width: 50%;
+        }
+
+        .billing {
+            text-align: right;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .total {
+            text-align: right;
+        }
+
+        footer {
+            position: absolute;
+            bottom: 20px;
+            border-top: 2px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header-container">
+        <div class="company-info">
+            <h2>Spundan Consultancy And IT Solutions Pvt. Ltd.</h2>
+            <p class="body-font">M-12 Sai Ram Plaza, 63 Mangal Nagar Vishnu Puri Colony<br>
+                Indore - 452001, Madhya Pradesh, India<br>
+                <b>Website:</b> <a href="http://www.spundan.com">www.spundan.com</a> Email: info@spundan.com<br>
+                <b>CIN:</b>
+                U72200MP2011PTC025132 GSTIN: 23AAPCS2658Q1ZK
+            </p>
+        </div>
+        <div> </div>
+    </div>
+    <div class="header">
+        <p class="invoice-heading">Invoice</p>
+        <img class="image-header" src="https://spundan.com/assets/logo.png" alt="Company Logo">
+    </div>
+
+    <div class="address-billing">
+        <div class="address">
+            <p class="body-font"><b>To:</b><br>
+                Sanjay Wadhwani<br> 3rd Floor, Sigma Arcade, Varthur Main Road,<br> Marathalli,
+                Bengaluru<br>
+                Karnataka 560037
+            </p>
+        </div>
+        <div class="billing">
+            <p class="body-font"><b>Billing Address:</b><br>
+                Codersbrain<br> 3rd Floor, Sigma Arcade, Varthur Main Road,<br> Marathalli,
+                Bengaluru<br> Karnataka 560037
+            </p>
+        </div>
+    </div>
+    <table>
+        <tr>
+            <th>S.No</th>
+            <th>Description</th>
+            <th>Unit Price</th>
+            <th>Quantity</th>
+            <th>Net Amount</th>
+            <th>Tax Rate</th>
+            <th>Tax Type</th>
+            <th>Tax Amount</th>
+            <th>Total Amount</th>
+        </tr>
+
+        <tr>
+            <td>1</td>
+            <td>Boat Micro USB</td>
+            <td>83.90</td>
+            <td>3</td>
+            <td>251.70</td>
+            <td>18%</td>
+            <td>GST</td>
+            <td>45.30</td>
+            <td>297.00</td>
+        </tr>
+        <tr style="font-weight: bold;">
+            <td colspan="7">Total</td>
+            <td>45.30</td>
+            <td>297.00</td>
+        </tr>
+    </table>
+    <p>Amount in Words: <strong>EIGHT THOUSAND, EIGHT HUNDRED FORTY-FIVE Rupees Only</strong></p>
+    <p class="body-font">For Director,<br>
+        <strong>SANJAY WADHWANI</strong>
+    </p>
+    <footer>
+        <p class="body-font">Spundan Consultancy And IT Solutions Pvt. Ltd.<br> M-12 Sai Ram Plaza, 63 Mangal Nagar
+            Vishnu Puri Colony,
+            Indore - 452001, Madhya Pradesh, India<br> <b>Website:</b> <a
+                href="http://www.spundan.com">www.spundan.com</a>
+            Email: info@spundan.com</p>
+    </footer>
+</body>
+
+</html>
